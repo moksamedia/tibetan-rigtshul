@@ -35,18 +35,6 @@ const questionStatement = [
   'statement'
 ]
 
-const permutations2 = posNeg.reduce((acc, curr)=>{
-  let result = aspect.reduce((acc2,curr2)=>{
-    let result = questionStatement.reduce((acc3,curr3)=>{
-      acc3.push([curr + ' ' + curr2 + ' ' + curr3])
-      return acc3
-    },acc2)
-    return acc2
-  },[])
-  acc = acc.concat(result)
-  return acc;
-},[])
-
 const permutations = posNeg.flatMap(a => aspect.flatMap(b => questionStatement.map(c => `${a} ${b} ${c}`)))
 
 console.log("permutations", permutations)
