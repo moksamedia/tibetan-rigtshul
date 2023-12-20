@@ -1,6 +1,5 @@
 <script setup>
 import notes from './assets/notes.csv'
-import grammarCards from './assets/grammar-cards.csv'
 
 const sampleSize = ([...arr], n = 1) => {
   let m = arr.length;
@@ -17,8 +16,6 @@ function compareNotes(a,b) {
 }
 
 randomNotes = randomNotes.sort(compareNotes)
-
-let randomGrammarCards = sampleSize(grammarCards, 20)
 
 const firstPerson = [
   'ང་',
@@ -55,7 +52,7 @@ const thirdPerson = [
   'ཁོང་གི་གྲོགས་པོ་',
   'སློབ་ཕྲུག་དེ་',
   'རྨོ་རྨོ་ལགས་',
-  'ངའི་ཇོ་ཇོ་ལགས་',
+  'ང་ཇོ་ཇོ་ལགས་',
   'རྒན་ལགས་',
   'རིན་པོ་ཆེ་དེ་ཚོ་ལགས་',
   'རྫ་མཁན་རྣམས་',
@@ -67,13 +64,13 @@ const thirdPerson = [
   'རྒྱ་གར་བ་ཚོ་',
 	'བོད་པ་དེ་',
 	'སློབ་ཕྲུག་ཆེན་མོ་བ་',
-	'བོད་ཡིག་དགེ་རྒན་',
+	'བོད་ཡིག་དགེ་རྒན་'
 ]
 
 const past = [
   'སྔོན་མ་',
   'ཁ་སང་',
-  'དེ་རིང་སྔོན་ལ་',
+  'དེ་རིང་སྔོན་མ་',
   'བདུན་ཕྲག་སྔོན་མ་',
   'དེ་རིང་ཞོགས་པ་',
   'གཟའ་འཁོར་སྔོན་མ་ལ་',
@@ -82,53 +79,39 @@ const past = [
   'ཁ་ས་དགོང་དག་',
   'ཁ་སིང་',
   'ལོ་སྔོན་མར་',
-  'སྔོན་མར་',
-  'ཆུང་ཆུང་སྐབས་ལ་',
   'གཟའ་པ་སངས་སྔོན་མ་ལ་',
   'ལོ་ཁ་ཤེས་སྔོན་ལ་',
 	'གཟའ་མཇུག་སྔོན་མར་',
-	'ལོ་ཁ་ཤས་ཀྱི་སྔོན་ལ་',
-  'ཁེ་ས་དགོང་དག་',
-  'མདང་དགོང་',
-  'མཐའ་མ་ལ་',
-  'ན་ནིང་'
+	'ལོ་ཁ་ཤས་ཀྱི་སྔོན་ལ་'
 ]
 
 const present = [
   'ད་ལྟ་',
   'དེང་སང་',
   'ཉེ་ཆར་',
-  'ནན་རྒྱུན་',
   'ཉིན་ལྟར་',
   'ཉི་མ་ཉིན་གང་',
   'ལོ་ལྟར་རེད་བཞིན་',
   'ད་ལྟ་ལམ་སང་',
   'ད་ལྟ་རང་',
   'ད་རེས་',
-  'སྤྱིར་བཏང་',
 ]
 
 const future = [
   'སང་ཉིན་',
   'མ་འོངས་པར་',
-  'དོ་དགོང་',
+  'དེ་དགོང་',
   'གནངས་ཉིན་ཀ་',
   'གནངས་ཉིན་',
   'གཞེས་ཉིན་',
   'ཉིན་མ་གཅིག་',
-  'དེ་རིང་དགོང་དག་',
-  'སང་ཉིན་ཞོགས་གས་',
   'གཟའ་ཟླ་བ་རྗེས་མ་ལ་',
   'གཟའ་པ་སངས་རྗེས་མ་ལ་',
   'དགུན་ཁ་རྗེས་མ་སྐབས་ལ་',
   'གཟའ་མཇུག་རྗེས་མར་',
 	'རྗེས་ལ་',
 	'དུས་ཚོད་སྟོང་པ་རག་ན་',
-	'གུང་སེང་གི་སྐབས་ལ་',
-  'ཏོག་ཙམ་རྗེས་ལ་',
-  'ཉིན་གསུམ་་རྗེས་ལ་',
-  'སང་དགོང་',
-  'ལོ་འདི་རྗེས་ལ་'
+	'གུང་སེང་གི་སྐབས་ལ་'
 ]
 
 function rand(array) { return array[Math.floor(Math.random() * array.length)] };
@@ -138,12 +121,6 @@ function rand(array) { return array[Math.floor(Math.random() * array.length)] };
 <template>
   <main>
     <v-container>
-      <v-row>
-        <v-col>
-          <p>positive // negative // direct // inferential, habitual</p>
-          <p>question // present perfect</p>
-        </v-col>
-      </v-row>
       <v-row>
         <v-col>
           <p class="tibetan">{{rand(past)}}</p>
@@ -175,7 +152,7 @@ function rand(array) { return array[Math.floor(Math.random() * array.length)] };
         </v-col>
       </v-row>
       <v-row style="height:100px;"></v-row>
-      <v-row class="random-notes-row" v-for="note in randomNotes" align="center" justify="center" no-gutters>
+      <v-row v-for="note in randomNotes" align="center" justify="center" no-gutters>
         <v-col>
           <span class="tibetan2">{{ note.front }}</span>
         </v-col>
@@ -183,24 +160,11 @@ function rand(array) { return array[Math.floor(Math.random() * array.length)] };
           <span class="noteback">({{note.part_of_speech}}) {{note.back}}</span>
         </v-col>
       </v-row>
-      <v-row style="height:100px;"></v-row>
-      <v-row class="grammar-card-row" v-for="card in randomGrammarCards" align="start" justify="start">
-        <v-col>
-          <div class="grammar-card-card align-start">{{ card.Card }}</div>
-        </v-col>
-        <v-col>
-          <div class="grammar-card-hint align-start">{{card.Hint}} {{card.Lesson}}</div>
-        </v-col>
-      </v-row>
     </v-container>
   </main>
 </template>
 
 <style scoped>
-
-h4.tibetan {
-  text-decoration: underline;
-}
 
 .tibetan {
   font-size: 30px;
@@ -213,18 +177,6 @@ h4.tibetan {
 .noteback {
   line-height: 40px;
   vertical-align: center;
-}
-
-.grammar-card-row:nth-child(odd), .random-notes-row:nth-child(odd) {
-  background-color: beige;
-}
-
-.grammar-card-card {
-  font-size: 20px;
-}
-.grammar-card-hint {
-  font-size: 20px;
-  color: #2c3e50;
 }
 
 </style>
