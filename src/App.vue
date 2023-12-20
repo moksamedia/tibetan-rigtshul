@@ -20,6 +20,37 @@ randomNotes = randomNotes.sort(compareNotes)
 
 let randomGrammarCards = sampleSize(grammarCards, 20)
 
+const posNeg = [
+  'positive',
+  'negative'
+]
+
+const aspect = [
+  'direct/immediate',
+  'general/habitual'
+]
+
+const questionStatement = [
+  'question',
+  'statement'
+]
+
+const permutations2 = posNeg.reduce((acc, curr)=>{
+  let result = aspect.reduce((acc2,curr2)=>{
+    let result = questionStatement.reduce((acc3,curr3)=>{
+      acc3.push([curr + ' ' + curr2 + ' ' + curr3])
+      return acc3
+    },acc2)
+    return acc2
+  },[])
+  acc = acc.concat(result)
+  return acc;
+},[])
+
+const permutations = posNeg.flatMap(a => aspect.flatMap(b => questionStatement.map(c => `${a} ${b} ${c}`)))
+
+console.log("permutations", permutations)
+
 const firstPerson = [
   'ང་',
   'ང་ཚོ་',
@@ -132,6 +163,23 @@ const future = [
 ]
 
 function rand(array) { return array[Math.floor(Math.random() * array.length)] };
+
+let timeAndPersonPermutations =  [
+    `${rand(past)} ${rand(firstPerson)}`,
+    `${rand(past)} ${rand(secondPerson)}`,
+    `${rand(past)} ${rand(thirdPerson)}`,
+    `${rand(present)} ${rand(firstPerson)}`,
+    `${rand(present)} ${rand(secondPerson)}`,
+    `${rand(present)} ${rand(thirdPerson)}`,
+    `${rand(future)} ${rand(firstPerson)}`,
+    `${rand(future)} ${rand(secondPerson)}`,
+    `${rand(future)} ${rand(thirdPerson)}`
+  ]
+
+
+  //array1.flatMap(d => array2.map(v => d + v)
+let allPermuntations = timeAndPersonPermutations.flatMap(d => permutations.map(v => d + ' ' + v))
+console.log(allPermuntations)
 
 </script>
 
