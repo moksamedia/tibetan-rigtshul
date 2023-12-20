@@ -1,5 +1,6 @@
 <script setup>
 import notes from './assets/notes.csv'
+import grammarCards from './assets/grammar-cards.csv'
 
 const sampleSize = ([...arr], n = 1) => {
   let m = arr.length;
@@ -16,6 +17,8 @@ function compareNotes(a,b) {
 }
 
 randomNotes = randomNotes.sort(compareNotes)
+
+let randomGrammarCards = sampleSize(grammarCards, 20)
 
 const firstPerson = [
   'ང་',
@@ -152,12 +155,21 @@ function rand(array) { return array[Math.floor(Math.random() * array.length)] };
         </v-col>
       </v-row>
       <v-row style="height:100px;"></v-row>
-      <v-row v-for="note in randomNotes" align="center" justify="center" no-gutters>
+      <v-row class="random-notes-row" v-for="note in randomNotes" align="center" justify="center" no-gutters>
         <v-col>
           <span class="tibetan2">{{ note.front }}</span>
         </v-col>
         <v-col>
           <span class="noteback">({{note.part_of_speech}}) {{note.back}}</span>
+        </v-col>
+      </v-row>
+      <v-row style="height:100px;"></v-row>
+      <v-row class="grammar-card-row" v-for="card in randomGrammarCards" align="start" justify="start">
+        <v-col>
+          <div class="grammar-card-card align-start">{{ card.Card }}</div>
+        </v-col>
+        <v-col>
+          <div class="grammar-card-hint align-start">{{card.Hint}} {{card.Lesson}}</div>
         </v-col>
       </v-row>
     </v-container>
@@ -177,6 +189,18 @@ function rand(array) { return array[Math.floor(Math.random() * array.length)] };
 .noteback {
   line-height: 40px;
   vertical-align: center;
+}
+
+.grammar-card-row:nth-child(odd), .random-notes-row:nth-child(odd) {
+  background-color: beige;
+}
+
+.grammar-card-card {
+  font-size: 20px;
+}
+.grammar-card-hint {
+  font-size: 20px;
+  color: #2c3e50;
 }
 
 </style>
