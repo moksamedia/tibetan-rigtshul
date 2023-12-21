@@ -154,6 +154,12 @@ const permutations2 = [
 
 ]
 
+export function processTibetan(text, style) {
+  return text.replace(/[\u0F00-\u0FFF]+/gm, (match) => {
+    return `<span style="${style}">${match}</span>`
+  })
+}
+
 </script>
 <script setup>
 import {ref, onMounted} from 'vue'
@@ -225,6 +231,10 @@ function randomize() {
   random_allPermutations()
 }
 
+function styleTibetan(text) {
+  return processTibetan(text, "font-size:150%;")
+}
+
 onMounted(() => {
   randomize(),
       mobile
@@ -292,10 +302,10 @@ onMounted(() => {
       </v-row>
       <v-row class="random-notes-row" v-for="(note,i) in randomNotes" :key="'note'+i" align="center" justify="center" no-gutters>
         <v-col>
-          <span class="tibetan2">{{ note.front }}</span>
+          <span class="tibetan2" v-html="styleTibetan(note.front)"></span>
         </v-col>
         <v-col>
-          <span class="noteback">({{note.part_of_speech}}) {{note.back}}</span>
+          <span class="noteback" v-html="styleTibetan(`(${note.part_of_speech}) ${note.back}`)"></span>
         </v-col>
       </v-row>
       <v-row class="vertical-spacer"></v-row>
@@ -355,13 +365,16 @@ onMounted(() => {
 <style scoped>
 
 main {
-  --tibetan-font-size: 30px;
   --english-font-size: 20px;
 }
 
+.v-container {
+  font-size: var(--english-font-size);
+}
+
+
 @media only screen and (max-width: 600px) {
   main {
-    --tibetan-font-size: 20px;
     --english-font-size: 16px;
   }
 }
@@ -372,10 +385,6 @@ main {
 
 h4.tibetan {
   text-decoration: underline;
-}
-
-.tibetan, .search-results-front, .tibetan2 {
-  font-size: var(--tibetan-font-size);
 }
 
 .noteback {
