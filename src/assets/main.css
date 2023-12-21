@@ -32,3 +32,8 @@ a,
     margin: 0px auto;
   }
 }
+
+@font-face {
+  font-family:"Microsoft Himalaya";
+  src: url("~@/src/assets/himalaya.ttf");
+}

@@ -227,7 +227,8 @@ function randomize() {
 
 onMounted(() => {
   randomize(),
-      mobile
+      mobile,
+      width
 })
 
 </script>
@@ -328,20 +329,22 @@ onMounted(() => {
           </v-btn>
         </v-col>
       </v-row>
-      <v-row v-if="!mobile" class="permutations-row" v-for="(p, i) in allPermutations" :key="'p'+i" align="center" justify="start">
-        <v-col cols="4" sm="2">
-          <div class="permutations-tense">{{ p.tense }}</div>
-        </v-col>
-        <v-col cols="8" sm="5">
-          <div class="permutations-tenseText">{{ p.tenseText }}</div>
-        </v-col>
-        <v-col cols="6" sm="auto">
-          <div class="permutations-posNeg">{{ p.posNeg }}</div>
-        </v-col>
-        <v-col cols="6" sm="auto">
-          <div class="permutations-questionStatement">{{ p.questionStatement }}</div>
-        </v-col>
-      </v-row>
+      <div v-if="width > 600">
+        <v-row class="permutations-row" v-for="(p, i) in allPermutations" :key="'p'+i" align="center" justify="start">
+          <v-col cols="4" sm="2">
+            <div class="permutations-tense">{{ p.tense }}</div>
+          </v-col>
+          <v-col cols="8" sm="5">
+            <div class="permutations-tenseText">{{ p.tenseText }}</div>
+          </v-col>
+          <v-col cols="6" sm="auto">
+            <div class="permutations-posNeg">{{ p.posNeg }}</div>
+          </v-col>
+          <v-col cols="6" sm="auto">
+            <div class="permutations-questionStatement">{{ p.questionStatement }}</div>
+          </v-col>
+        </v-row>
+      </div>
       <v-row v-else class="permutations-row" v-for="(p, i) in allPermutations" :key="'p'+i" align="center" justify="start">
         <v-col cols="12">
           <span class="permutations-tenseText">{{ p.tenseText + " "}}</span>
@@ -355,8 +358,9 @@ onMounted(() => {
 <style scoped>
 
 main {
-  --tibetan-font-size: 30px;
+  --tibetan-font-size: 28px;
   --english-font-size: 20px;
+  font-family: "Microsoft Himalaya";
 }
 
 @media only screen and (max-width: 600px) {
