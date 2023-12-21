@@ -354,6 +354,18 @@ onMounted(() => {
 
 <style scoped>
 
+main {
+  --tibetan-font-size: 30px;
+  --english-font-size: 20px;
+}
+
+@media only screen and (max-width: 600px) {
+  main {
+    --tibetan-font-size: 20px;
+    --english-font-size: 16px;
+  }
+}
+
 .vertical-spacer {
   height: 40px;
 }
@@ -362,12 +374,8 @@ h4.tibetan {
   text-decoration: underline;
 }
 
-.tibetan, .search-results-front {
-  font-size: 30px;
-}
-
-.tibetan2 {
-  font-size: 30px;
+.tibetan, .search-results-front, .tibetan2 {
+  font-size: var(--tibetan-font-size);
 }
 
 .noteback {
@@ -380,23 +388,24 @@ h4.tibetan {
 }
 
 .grammar-card-card {
-  font-size: 20px;
+  font-size: var(--english-font-size);
 }
 .grammar-card-hint {
-  font-size: 20px;
+  font-size: var(--english-font-size);
   color: #2c3e50;
 }
 
 .permutations-row {
-  font-size: 18px;
+  font-size: var(--english-font-size);
 }
 
 .permutations-tenseText {
-  font-size: 30px;
+  font-size: var(--tibetan-font-size);
 }
 
 .header-row {
   margin-bottom: 20px;
   border-bottom: solid 1px black;
 }
+
 </style>
