@@ -160,7 +160,7 @@ const permutations2 = [
 import {ref, onMounted} from 'vue'
 import { useDisplay } from 'vuetify'
 const { width, mobile } = useDisplay()
-import SearchResults from './components/SearchResult'
+import SearchResult from './components/SearchResult.vue'
 
 let searchTerm = ref('')
 let searchResults = ref([])
@@ -282,26 +282,8 @@ onMounted(() => {
           <v-text-field label="Seach" variant="outlined" v-model="searchTerm" @input="onSearchTermChange"></v-text-field>
         </v-col>
       </v-row>
-      <div v-for="(note, i) in searchResults" :key="'note'+i" >
-        <v-row class="search-results" align="center" justify="start">
-          <v-col cols="auto">
-            <div class="search-results-front" v-html="styleTibetan(note.fields.Front)"></div>
-          </v-col>
-          <v-col>
-            <div class="search-results-back" v-html="styleTibetan(note.fields.Back)"></div>
-          </v-col>
-          <v-col v-if="!showSearchResultsDetail.has(note.nid)" cols="auto">
-            <v-btn density="compact" size="x-small" variant="plain" @click="showSearchResultsDetail.add(note.nid)">More</v-btn>
-          </v-col>
-          <v-col v-else cols="auto">
-            <v-btn density="compact" size="x-small" variant="plain" @click="showSearchResultsDetail.delete(note.nid)">Less</v-btn>
-          </v-col>
-        </v-row>
-        <v-row v-if="showSearchResultsDetail.has(note.nid)" class="search-results-detail">
-          <v-col>
-            Here is some detail
-          </v-col>
-        </v-row>
+      <div v-for="(note, i) in searchResults" :key="'note'+i" class="search-results">
+        <SearchResult :note="note" :styleTibetan="styleTibetan" idx="i"/>
       </div>
       <v-row class="vertical-spacer"></v-row>
       <v-row class="header-row">
