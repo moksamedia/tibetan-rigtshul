@@ -1,7 +1,8 @@
 <script>
 import notes from './assets/notes.csv'
 import grammarCards from './assets/grammar-cards.csv'
-
+import notesJson from './assets/notes.json'
+console.log(notesJson)
 const sampleSize = ([...arr], n = 1) => {
   let m = arr.length;
   while (m) {
@@ -154,17 +155,12 @@ const permutations2 = [
 
 ]
 
-export function processTibetan(text, style) {
-  return text.replace(/[\u0F00-\u0FFF]+/gm, (match) => {
-    return `<span style="${style}">${match}</span>`
-  })
-}
-
 </script>
 <script setup>
 import {ref, onMounted} from 'vue'
 import { useDisplay } from 'vuetify'
 const { width, mobile } = useDisplay()
+import SearchResults from './components/SearchResult'
 
 let searchTerm = ref('')
 let searchResults = ref([])
@@ -180,7 +176,12 @@ function onSearchTermChange() {
     searchResults.value = [];
   }
   else {
-    searchResults.value = notes.filter(note => note.front.includes(searchTerm.value) || note.back.includes(searchTerm.value))
+    searchResults.value = notesJson.filter(noteJson => {
+      let front = noteJson.fields.Front
+      let back = noteJson.fields.Back
+      return (front && front.includes(searchTerm.value)) || (back && back.includes(searchTerm.value))
+    })
+    console.log("Found: " + searchResults.value.length)
   }
 }
 
@@ -196,16 +197,19 @@ function random_personAndTimeForDrilling() {
 }
 
 function random_timeAndPersonPermutations() {
+  let _past = rand(past)
+  let _present = rand(present)
+  let _future = rand(future)
   timeAndPersonPermutations.value =  [
-    {tense:'PAST', tenseText: `${rand(past)} ${rand(firstPerson)}`},
-    {tense:'PAST', tenseText: `${rand(past)} ${rand(secondPerson)}`},
-    {tense:'PAST', tenseText: `${rand(past)} ${rand(thirdPerson)}`},
-    {tense:'PRESENT', tenseText: `${rand(present)} ${rand(firstPerson)}`},
-    {tense:'PRESENT', tenseText: `${rand(present)} ${rand(secondPerson)}`},
-    {tense:'PRESENT', tenseText: `${rand(present)} ${rand(thirdPerson)}`},
-    {tense:'FUTURE', tenseText: `${rand(future)} ${rand(firstPerson)}`},
-    {tense:'FUTURE', tenseText: `${rand(future)} ${rand(secondPerson)}`},
-    {tense:'FUTURE', tenseText: `${rand(future)} ${rand(thirdPerson)}`},
+    {tense:'PAST', tenseText: `${_past} ${rand(firstPerson)}`},
+    {tense:'PAST', tenseText: `${_past} ${rand(secondPerson)}`},
+    {tense:'PAST', tenseText: `${_past} ${rand(thirdPerson)}`},
+    {tense:'PRESENT', tenseText: `${_present} ${rand(firstPerson)}`},
+    {tense:'PRESENT', tenseText: `${_present} ${rand(secondPerson)}`},
+    {tense:'PRESENT', tenseText: `${_present} ${rand(thirdPerson)}`},
+    {tense:'FUTURE', tenseText: `${_future} ${rand(firstPerson)}`},
+    {tense:'FUTURE', tenseText: `${_future} ${rand(secondPerson)}`},
+    {tense:'FUTURE', tenseText: `${_future} ${rand(thirdPerson)}`},
   ]
 }
 
@@ -231,13 +235,33 @@ function randomize() {
   random_allPermutations()
 }
 
-function styleTibetan(text) {
-  return processTibetan(text, "font-size:150%;")
+function isString(test) {
+  return typeof text !== 'string' || text instanceof String
 }
+
+function processTibetan(text, style, _class) {
+  return text.replace(/[\u0F00-\u0FFF]+/gm, (match) => {
+    return `<span style="${style}" class="${_class}">${match}</span>`
+  })
+}
+
+function styleTibetan(text) {
+  if (text == null || !isString(text) || text.trim() === "") return text;
+  return processTibetan(text, null, "tibetan")
+}
+
+
+function styleTibetanSmaller(text) {
+  if (text == null || !isString(text) || text.trim() === "") return text;
+  return processTibetan(text, null, "tibetan-smaller")
+}
+
+let showSearchResultsDetail = ref(new Set())
 
 onMounted(() => {
   randomize(),
-      mobile
+      mobile,
+      width
 })
 
 </script>
@@ -258,14 +282,27 @@ onMounted(() => {
           <v-text-field label="Seach" variant="outlined" v-model="searchTerm" @input="onSearchTermChange"></v-text-field>
         </v-col>
       </v-row>
-      <v-row class="search-results" v-for="(note, i) in searchResults" :key="'note'+i" align="center" justify="start">
-        <v-col cols="auto">
-          <div class="search-results-front">{{ note.front }}</div>
-        </v-col>
-        <v-col>
-          <div class="search-results-back">{{note.back}}</div>
-        </v-col>
-      </v-row>
+      <div v-for="(note, i) in searchResults" :key="'note'+i" >
+        <v-row class="search-results" align="center" justify="start">
+          <v-col cols="auto">
+            <div class="search-results-front" v-html="styleTibetan(note.fields.Front)"></div>
+          </v-col>
+          <v-col>
+            <div class="search-results-back" v-html="styleTibetan(note.fields.Back)"></div>
+          </v-col>
+          <v-col v-if="!showSearchResultsDetail.has(note.nid)" cols="auto">
+            <v-btn density="compact" size="x-small" variant="plain" @click="showSearchResultsDetail.add(note.nid)">More</v-btn>
+          </v-col>
+          <v-col v-else cols="auto">
+            <v-btn density="compact" size="x-small" variant="plain" @click="showSearchResultsDetail.delete(note.nid)">Less</v-btn>
+          </v-col>
+        </v-row>
+        <v-row v-if="showSearchResultsDetail.has(note.nid)" class="search-results-detail">
+          <v-col>
+            Here is some detail
+          </v-col>
+        </v-row>
+      </div>
       <v-row class="vertical-spacer"></v-row>
       <v-row class="header-row">
         <v-col>
@@ -279,14 +316,14 @@ onMounted(() => {
       </v-row>
       <v-row>
         <v-col>
-          <p class="tibetan">{{personAndTimeForDrilling.past}}</p>
-          <p class="tibetan">{{personAndTimeForDrilling.present}}</p>
-          <p class="tibetan">{{personAndTimeForDrilling.future}}</p>
+          <p v-html="styleTibetan(personAndTimeForDrilling.past)"></p>
+          <p v-html="styleTibetan(personAndTimeForDrilling.present)"></p>
+          <p v-html="styleTibetan(personAndTimeForDrilling.future)"></p>
         </v-col>
         <v-col>
-          <p class="tibetan">{{personAndTimeForDrilling.firstPerson}}</p>
-          <p class="tibetan">{{personAndTimeForDrilling.secondPerson}}</p>
-          <p class="tibetan">{{personAndTimeForDrilling.thirdPerson}}</p>
+          <p v-html="styleTibetan(personAndTimeForDrilling.firstPerson)"></p>
+          <p v-html="styleTibetan(personAndTimeForDrilling.secondPerson)"></p>
+          <p v-html="styleTibetan(personAndTimeForDrilling.thirdPerson)"></p>
         </v-col>
       </v-row>
       <v-row class="vertical-spacer"></v-row>
@@ -300,9 +337,9 @@ onMounted(() => {
           </v-btn>
         </v-col>
       </v-row>
-      <v-row class="random-notes-row" v-for="(note,i) in randomNotes" :key="'note'+i" align="center" justify="center" no-gutters>
+      <v-row class="random-notes-row" v-for="(note,i) in randomNotes" :key="'note'+i" align="center" justify="center">
         <v-col>
-          <span class="tibetan2" v-html="styleTibetan(note.front)"></span>
+          <span v-html="styleTibetan(note.front)"></span>
         </v-col>
         <v-col>
           <span class="noteback" v-html="styleTibetan(`(${note.part_of_speech}) ${note.back}`)"></span>
@@ -319,12 +356,22 @@ onMounted(() => {
           </v-btn>
         </v-col>
       </v-row>
-      <v-row class="grammar-card-row" v-for="(card, i) in randomGrammarCards" :key="'card'+i" align="start" justify="start">
-        <v-col>
-          <div class="grammar-card-card align-start">{{ card.Card }}</div>
+      <v-row class="grammar-card-row" v-for="(card, i) in randomGrammarCards" :key="'card'+i" align="start" justify="start" style="margin-bottom: 10px">
+        <v-col v-if="card.Example" v>
+          <div class="grammar-card-card" v-html="styleTibetan(card.Example)"></div>
         </v-col>
         <v-col>
-          <div class="grammar-card-hint align-start">{{card.Hint}} {{card.Lesson}}</div>
+          <div class="grammar-card-card" v-html="styleTibetan(card.Card)"></div>
+        </v-col>
+        <v-col cols="12" style="border-top: 1px solid rgba(211,211,211,0.25)">
+          <v-row align="end">
+            <v-col cols="9">
+              <div class="grammar-card-hint" v-html="styleTibetanSmaller(`${card.Hint}`)"></div>
+            </v-col>
+            <v-col cols="3" style="text-align: right; font-size: 80%; color: lightgray;">
+              <div class="grammar-card-hint" v-html="styleTibetanSmaller(`${card.Lesson}`)"></div>
+            </v-col>
+          </v-row>
         </v-col>
       </v-row>
       <v-row class="vertical-spacer"></v-row>
@@ -338,23 +385,25 @@ onMounted(() => {
           </v-btn>
         </v-col>
       </v-row>
-      <v-row v-if="!mobile" class="permutations-row" v-for="(p, i) in allPermutations" :key="'p'+i" align="center" justify="start">
-        <v-col cols="4" sm="2">
-          <div class="permutations-tense">{{ p.tense }}</div>
-        </v-col>
-        <v-col cols="8" sm="5">
-          <div class="permutations-tenseText">{{ p.tenseText }}</div>
-        </v-col>
-        <v-col cols="6" sm="auto">
-          <div class="permutations-posNeg">{{ p.posNeg }}</div>
-        </v-col>
-        <v-col cols="6" sm="auto">
-          <div class="permutations-questionStatement">{{ p.questionStatement }}</div>
-        </v-col>
-      </v-row>
+      <div v-if="width > 600">
+        <v-row class="permutations-row" v-for="(p, i) in allPermutations" :key="'p'+i" align="center" justify="start">
+          <v-col cols="4" sm="2">
+            <div class="permutations-tense">{{ p.tense }}</div>
+          </v-col>
+          <v-col cols="8" sm="5">
+            <div class="permutations-tenseText" v-html="styleTibetan(p.tenseText)"></div>
+          </v-col>
+          <v-col cols="6" sm="auto">
+            <div class="permutations-posNeg">{{ p.posNeg }}</div>
+          </v-col>
+          <v-col cols="6" sm="auto">
+            <div class="permutations-questionStatement">{{ p.questionStatement }}</div>
+          </v-col>
+        </v-row>
+      </div>
       <v-row v-else class="permutations-row" v-for="(p, i) in allPermutations" :key="'p'+i" align="center" justify="start">
         <v-col cols="12">
-          <span class="permutations-tenseText">{{ p.tenseText + " "}}</span>
+          <span class="permutations-tenseText" v-html="styleTibetan(p.tenseText)+' '"></span>
           <span class="permutations-posNeg">{{ p.posNeg + " "}}</span><span class="permutations-questionStatement">{{ p.questionStatement }}</span>
         </v-col>
       </v-row>
@@ -362,29 +411,34 @@ onMounted(() => {
   </main>
 </template>
 
+<style>
+.tibetan {
+  font-size:180%;
+  line-height: 170%;
+}
+.tibetan-smaller {
+  font-size:130%;
+  line-height: 160%;
+}
+</style>
+
 <style scoped>
 
 main {
-  --english-font-size: 20px;
+  font-family: "Microsoft Himalaya";
 }
-
-.v-container {
-  font-size: var(--english-font-size);
-}
-
 
 @media only screen and (max-width: 600px) {
   main {
-    --english-font-size: 16px;
+    font-size: 14px;
+  }
+  h1 {
+    font-size: 18px;
   }
 }
 
 .vertical-spacer {
   height: 40px;
-}
-
-h4.tibetan {
-  text-decoration: underline;
 }
 
 .noteback {
@@ -397,19 +451,15 @@ h4.tibetan {
 }
 
 .grammar-card-card {
-  font-size: var(--english-font-size);
 }
 .grammar-card-hint {
-  font-size: var(--english-font-size);
   color: #2c3e50;
 }
 
 .permutations-row {
-  font-size: var(--english-font-size);
 }
 
 .permutations-tenseText {
-  font-size: var(--tibetan-font-size);
 }
 
 .header-row {
