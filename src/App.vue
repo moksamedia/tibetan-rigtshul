@@ -2,7 +2,7 @@
 import notes from './assets/notes.csv'
 import grammarCards from './assets/grammar-cards.csv'
 import notesJson from './assets/notes.json'
-console.log(notesJson)
+
 const sampleSize = ([...arr], n = 1) => {
   let m = arr.length;
   while (m) {
@@ -159,8 +159,9 @@ const permutations2 = [
 <script setup>
 import {ref, onMounted} from 'vue'
 import { useDisplay } from 'vuetify'
-const { width, mobile } = useDisplay()
 import SearchResult from './components/SearchResult.vue'
+
+const { width, mobile } = useDisplay()
 
 let searchTerm = ref('')
 let searchResults = ref([])
@@ -214,7 +215,7 @@ function random_timeAndPersonPermutations() {
 }
 
 function random_notes() {
-  randomNotes.value = sampleSize(notes, 20).sort(compareNotes)
+  randomNotes.value = sampleSize(notesJson, 20).sort(compareNotes)
 }
 
 function random_grammarCard() {
@@ -313,20 +314,10 @@ onMounted(() => {
         <v-col>
           <h1>Random Vocab</h1>
         </v-col>
-        <v-col cols="auto">
-          <v-btn @click="random_notes" rounded="xl" size="small">
-            R!
-          </v-btn>
-        </v-col>
       </v-row>
-      <v-row class="random-notes-row" v-for="(note,i) in randomNotes" :key="'note'+i" align="center" justify="center">
-        <v-col>
-          <span v-html="styleTibetan(note.front)"></span>
-        </v-col>
-        <v-col>
-          <span class="noteback" v-html="styleTibetan(`(${note.part_of_speech}) ${note.back}`)"></span>
-        </v-col>
-      </v-row>
+      <div v-for="(note, i) in randomNotes" :key="'note'+i" class="search-results">
+        <SearchResult :note="note" :styleTibetan="styleTibetan" idx="i" isRandomNotes="true"/>
+      </div>
       <v-row class="vertical-spacer"></v-row>
       <v-row class="header-row">
         <v-col>

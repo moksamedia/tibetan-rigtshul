@@ -15,10 +15,14 @@ const props = defineProps({
   idx: {
     type: Number,
     required: true
+  },
+  isRandomNotes: {
+    type: Boolean,
+    default: false
   }
 })
 
-const {note} = props;
+const {note, styleTibetan} = props;
 
 let showDetail = ref (false )
 let hasMore = ref(false)
@@ -44,16 +48,22 @@ else if (note.model_name==='Tibetan Vocab (Andrew)') {
   ) hasMore = true
 }
 
+function getBackText() {
+  let result = styleTibetan(note.fields['Back'])
+  if (isNotEmptyOrNullString(note.fields['Part of Speech'])) result = `(${note.fields['Part of Speech']}) ` + result
+  return result
+}
+
 </script>
 
 <template>
   <v-col cols="12">
     <v-row align="center" justify="start">
-      <v-col cols="auto">
+      <v-col :cols="isRandomNotes ? '4' : 'auto'">
         <div class="search-results-front" v-html="styleTibetan(note.fields.Front)"></div>
       </v-col>
       <v-col>
-        <div class="search-results-back" v-html="styleTibetan(note.fields.Back)"></div>
+        <div class="search-results-back" v-html="getBackText()"></div>
       </v-col>
       <v-col v-if="showDetail" cols="auto">
         <v-btn density="compact" size="x-small" variant="plain" @click="showDetail=false">Less</v-btn>
