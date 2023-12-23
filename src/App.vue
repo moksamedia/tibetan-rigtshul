@@ -3,6 +3,35 @@ import notes from './assets/notes.csv'
 import grammarCards from './assets/grammar-cards.csv'
 import notesJson from './assets/notes.json'
 
+const tagsSet = notesJson.reduce((acc, curr) => {
+  curr.tags.forEach(tag => acc.add(tag))
+  return acc
+}, new Set())
+
+const tagsSorted = Array.from(tagsSet).sort()
+
+console.log("tags=",tagsSorted)
+
+const decksSet = notesJson.reduce((acc, curr) => {
+  curr.decks.forEach(deck => acc.add(deck.name))
+  return acc
+}, new Set())
+
+const decksSorted = Array.from(decksSet).sort()
+
+console.log("decks=",decksSorted)
+
+const grammarLessonSet = grammarCards.reduce((acc, curr) => {
+  if (curr.Lesson) acc.add(curr.Lesson)
+  return acc
+}, new Set())
+
+const grammarLessonSetSorted = Array.from(grammarLessonSet).sort()
+
+console.log("grammarLessonSetSorted=",grammarLessonSetSorted)
+
+
+
 const sampleSize = ([...arr], n = 1) => {
   let m = arr.length;
   while (m) {
@@ -11,10 +40,6 @@ const sampleSize = ([...arr], n = 1) => {
   }
   return arr.slice(0, n);
 };
-
-function compareNotes(a,b) {
-  return a.part_of_speech < b.part_of_speech
-}
 
 function rand(array) { return array[Math.floor(Math.random() * array.length)] };
 
@@ -157,7 +182,7 @@ const permutations2 = [
 
 </script>
 <script setup>
-import {ref, onMounted} from 'vue'
+import {ref, onMounted, unref, toRaw} from 'vue'
 import { useDisplay } from 'vuetify'
 import SearchResult from './components/SearchResult.vue'
 
@@ -171,6 +196,9 @@ let permutations = ref([])
 let allPermutations = ref([])
 let timeAndPersonPermutations = ref([])
 let personAndTimeForDrilling = ref({})
+let randomFilterByTags = ref([])
+let numRandomWords = ref(20)
+let grammarFilterByLesson = ref([])
 
 function onSearchTermChange() {
   if (searchTerm.value == null || searchTerm.value.trim() === "") {
@@ -214,12 +242,46 @@ function random_timeAndPersonPermutations() {
   ]
 }
 
-function random_notes() {
-  randomNotes.value = sampleSize(notesJson, 20).sort(compareNotes)
+function noteContainsTag(note, filterTags) {
+  //console.log("filterTags:", filterTags)
+  //console.log("note.tags:", note.tags)
+  for (let i=0;i<filterTags.length;i++) {
+    //console.log("Plunk")
+    if (note.tags.includes(filterTags[i])) {
+      //console.log(`note.tags:${note.tags} includes ${filterTags[i]}`)
+      return true
+    }
+    else {
+      //console.log(`note.tags:${note.tags} DOES NOT include ${filterTags[i]}`)
+    }
+  }
+  return false
 }
 
-function random_grammarCard() {
-  randomGrammarCards.value = sampleSize(grammarCards, 20)
+function compareNotes(a,b) {
+  return a.fields['Part of Speech'] < b.fields['Part of Speech']
+}
+
+function random_notes(numRandomWords) {
+  let filtered = notesJson
+  let filterTags = toRaw(randomFilterByTags.value)
+  //console.log("filterTags", filterTags)
+  if (filterTags.length > 0) {
+    filtered = notesJson.filter(note => {
+      return noteContainsTag(note, filterTags)
+    })
+  }
+  randomNotes.value = sampleSize(filtered, numRandomWords.value).sort(compareNotes)
+  console.log("randomNotes=",randomNotes.value)
+}
+
+function random_grammarCard(numRandomWords) {
+  let filtered = grammarCards
+  let rawFilterLessons = toRaw(grammarFilterByLesson.value)
+  if (rawFilterLessons.length > 0) {
+    filtered = grammarCards.filter(card => rawFilterLessons.includes(card.Lesson))
+  }
+  randomGrammarCards.value = sampleSize(filtered, numRandomWords.value)
 }
 
 function random_allPermutations() {
@@ -230,8 +292,8 @@ function random_allPermutations() {
 
 function randomize() {
   random_personAndTimeForDrilling()
-  random_notes()
-  random_grammarCard()
+  random_notes(numRandomWords)
+  random_grammarCard(numRandomWords)
   random_timeAndPersonPermutations()
   random_allPermutations()
 }
@@ -259,6 +321,12 @@ function styleTibetanSmaller(text) {
 
 let showSearchResultsDetail = ref(new Set())
 
+function showLessonPdf(card) {
+  let URI = "./rigtshul/" + encodeURIComponent('LRZTP 9 ' + card.Lesson + ".pdf")
+  console.log("Opening: " + URI)
+  window.open(URI, '_blank')
+}
+
 onMounted(() => {
   randomize(),
       mobile,
@@ -271,19 +339,47 @@ onMounted(() => {
   <main>
     <v-container>
       <v-row>
-        <v-col>
+        <v-col sm="6" xs="6" md="">
           <v-btn @click="randomize">
             Randomize Again!
           </v-btn>
         </v-col>
+        <v-col md="2" sm="6" xs="6">
+          <v-select
+              v-model="numRandomWords"
+              label="Num random"
+              :items="[5,10,15,20,30,50]"
+              variant="underlined"
+          ></v-select>
+        </v-col>
+        <v-col xs="6" sm="6" md="">
+          <v-select
+              multiple
+              clearable
+              v-model="randomFilterByTags"
+              label="Filter vocab by tags"
+              :items="tagsSorted"
+              variant="underlined"
+          ></v-select>
+        </v-col>
+        <v-col xs="6" sm="6" md="">
+          <v-select
+              multiple
+              clearable
+              v-model="grammarFilterByLesson"
+              label="Filter grammar"
+              :items="grammarLessonSetSorted"
+              variant="underlined"
+          ></v-select>
+        </v-col>
       </v-row>
       <v-row>
         <v-col>
-          <h1>Word search:</h1>
+          <h1>Word search</h1>
           <v-text-field label="Seach" variant="outlined" v-model="searchTerm" @input="onSearchTermChange"></v-text-field>
         </v-col>
       </v-row>
-      <div v-for="(note, i) in searchResults" :key="'note'+i" class="search-results">
+      <div v-for="(note, i) in searchResults" :key="'note'+i" class="search-results himalaya">
         <SearchResult :note="note" :styleTibetan="styleTibetan" idx="i"/>
       </div>
       <v-row class="vertical-spacer"></v-row>
@@ -298,7 +394,7 @@ onMounted(() => {
         </v-col>
       </v-row>
       <v-row>
-        <v-col>
+        <v-col class="himalaya">
           <p v-html="styleTibetan(personAndTimeForDrilling.past)"></p>
           <p v-html="styleTibetan(personAndTimeForDrilling.present)"></p>
           <p v-html="styleTibetan(personAndTimeForDrilling.future)"></p>
@@ -314,9 +410,14 @@ onMounted(() => {
         <v-col>
           <h1>Random Vocab</h1>
         </v-col>
+        <v-col cols="auto">
+          <v-btn @click="random_notes" rounded="xl" size="small">
+            R!
+          </v-btn>
+        </v-col>
       </v-row>
-      <div v-for="(note, i) in randomNotes" :key="'note'+i" class="search-results">
-        <SearchResult :note="note" :styleTibetan="styleTibetan" idx="i" isRandomNotes="true"/>
+      <div v-for="(note, i) in randomNotes" :key="note.nid" class="search-results">
+        <SearchResult :note="note" :styleTibetan="styleTibetan" idx="i" isRandomNotes="true" :id="'note-'+note.nid"/>
       </div>
       <v-row class="vertical-spacer"></v-row>
       <v-row class="header-row">
@@ -342,7 +443,7 @@ onMounted(() => {
               <div class="grammar-card-hint" v-html="styleTibetanSmaller(`${card.Hint}`)"></div>
             </v-col>
             <v-col cols="3" style="text-align: right; font-size: 80%; color: lightgray;">
-              <div class="grammar-card-hint" v-html="styleTibetanSmaller(`${card.Lesson}`)"></div>
+              <div class="grammar-card-hint" v-html="styleTibetanSmaller(`${card.Lesson}`)" @click="showLessonPdf(card)"></div>
             </v-col>
           </v-row>
         </v-col>
@@ -396,10 +497,6 @@ onMounted(() => {
 </style>
 
 <style scoped>
-
-main {
-  font-family: "Microsoft Himalaya";
-}
 
 @media only screen and (max-width: 600px) {
   main {

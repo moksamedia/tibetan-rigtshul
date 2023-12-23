@@ -3,3 +3,4 @@ Need to fix permutations to deal with volitional / non-volitional for self, and 
 Filter grammar by lesson, words by tag
 Word lookup
 Vocab matching
+Include link to pdf of lesson

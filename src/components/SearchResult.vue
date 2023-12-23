@@ -1,6 +1,6 @@
 <script setup>
 
-import {ref} from 'vue'
+import {ref, toRaw} from 'vue'
 import { toRefs, toRef } from 'vue'
 
 const props = defineProps({
@@ -28,6 +28,35 @@ let showDetail = ref (false )
 let hasMore = ref(false)
 
 
+const SOUND_REGEX = /\[sound:([^\]]*)\]/g
+
+const sounds = ref([]);
+const soundsSentence = ref([]);
+
+function getSoundFieldMatches(fieldName, acc) {
+  let matches = [...note.fields[fieldName].matchAll(SOUND_REGEX)]
+  for (const match of matches) {
+    acc.push(match[1]) // 1 = first capture group
+  }
+}
+
+if (note.model_name==='LRZTP Colloquial') {
+  let soundField = note.fields['Sound']
+  let matches = [...soundField.matchAll(SOUND_REGEX)]
+  for (const match of matches) {
+    sounds.value.push(match[1]) // 1 = first capture group
+  }
+}
+else if (note.model_name==='Tibetan Vocab (Andrew)') {
+  let soundField = note.fields['Sound']
+  const matches = [...soundField.matchAll(SOUND_REGEX)]
+  for (const match of matches) {
+    sounds.value.push(match[1]) // 1 = first capture group
+  }
+}
+
+console.log("sounds=", toRaw(sounds.value))
+
 function isString(str) {
   return (typeof str === 'string' || str instanceof String)
 }
@@ -48,11 +77,23 @@ else if (note.model_name==='Tibetan Vocab (Andrew)') {
   ) hasMore = true
 }
 
+if (sounds.value.length > 0) hasMore = true
+
 function getBackText() {
   let result = styleTibetan(note.fields['Back'])
   if (isNotEmptyOrNullString(note.fields['Part of Speech'])) result = `(${note.fields['Part of Speech']}) ` + result
   return result
 }
+
+function handlePlaySounds(sound) {
+  let URI = "./rigtshul/media/" + encodeURIComponent(sound)
+  console.log("Playing: " + URI)
+  let audio = new Audio(URI);
+  audio.play();
+}
+
+
+
 
 </script>
 
@@ -74,17 +115,20 @@ function getBackText() {
     </v-row>
     <v-row v-if="showDetail && note.model_name==='LRZTP Colloquial'" class="lrztp-colloquial detail" no-gutters>
       <v-col>
-        <div v-if="note.fields['Note']" v-html="'Note:<br/>' + styleTibetan(note.fields['Note'])"></div>
+        <div v-if="note.fields['Note']" v-html="styleTibetan(note.fields['Note'])"></div>
+        <div v-if="note.tags">{{'Tags: '+ note.tags}}</div>
+        <v-btn v-for="(sound, i) in sounds" :key="note.nid + '-sound-' + i" @click="handlePlaySounds(sound)">Play</v-btn>
       </v-col>
     </v-row>
     <v-row v-else-if="showDetail && note.model_name==='Tibetan Vocab (Andrew)'" class="tibetan-vocab-andrew detail">
       <v-col>
         <div v-if="note.fields['Tense']" v-html="styleTibetan('Tenses: '+ note.fields['Tense'])"></div>
-        <div v-if="note.fields['Example Sentence English']" v-html="note.fields['Example Sentence English']"></div>
         <div v-if="note.fields['Example Sentence Tibetan']" v-html="styleTibetan(note.fields['Example Sentence Tibetan'])"></div>
+        <div v-if="note.fields['Example Sentence English']" v-html="note.fields['Example Sentence English']"></div>
         <div v-if="note.fields['Notes']" v-html="styleTibetan(note.fields['Notes'])"></div>
         <div v-if="note.fields['Shesa']" v-html="styleTibetan('Shesa: '+ note.fields['Shesa'])"></div>
         <div v-if="note.fields['Synonymous']" v-html="styleTibetan('Synonyms: '+ note.fields['Synonymous'])"></div>
+        <div v-if="note.tags">{{'Tags: '+ note.tags}}</div>
       </v-col>
     </v-row>
   </v-col>
