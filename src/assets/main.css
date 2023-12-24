@@ -35,5 +35,11 @@ a,
 
 @font-face {
   font-family:"Microsoft Himalaya";
-  src: url("~@/src/assets/himalaya.ttf");
+  src: url("./himalaya.ttf");
+}
+
+@media only screen and (max-width: 600px) {
+  #app {
+    padding: 10px;
+  }
 }
