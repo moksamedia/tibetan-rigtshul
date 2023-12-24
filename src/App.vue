@@ -246,7 +246,7 @@ onMounted(() => {
       <v-row>
         <v-col>
           <h1>Word search:</h1>
-          <v-text-field label="Seach" variant="outlined" v-model="searchTerm" @input="onSearchTermChange"></v-text-field>
+          <v-text-field label="Seach" variant="outlined" v-model="searchTerm" @click:append="onSearchTermChange" append-icon="message"></v-text-field>
         </v-col>
       </v-row>
       <v-row class="search-results" v-for="(note, i) in searchResults" :key="'note'+i" align="center" justify="start">
