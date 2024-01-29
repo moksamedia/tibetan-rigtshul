@@ -380,8 +380,8 @@ onMounted(() => {
       </v-row>
       <v-row>
         <v-col>
-          <h1>Word search</h1>
-          <v-text-field label="Seach" variant="outlined" v-model="searchTerm" @change="onSearchTermChange"></v-text-field>
+          <h1>Word search:</h1>
+          <v-text-field label="Seach" variant="outlined" v-model="searchTerm" @click:append="onSearchTermChange" append-icon="message"></v-text-field>
         </v-col>
       </v-row>
       <div v-for="(note, i) in searchResults" :key="'note'+i" class="search-results himalaya">
