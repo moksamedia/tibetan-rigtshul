@@ -19,10 +19,14 @@ const props = defineProps({
   isRandomNotes: {
     type: Boolean,
     default: false
+  },
+  basePath: {
+    type: String,
+    required: true
   }
 })
 
-const {note, styleTibetan} = props;
+const {note, styleTibetan, basePath} = props;
 
 let showDetail = ref (false )
 let hasMore = ref(false)
@@ -38,21 +42,17 @@ function getSoundFieldMatches(fieldName, acc) {
   for (const match of matches) {
     acc.push(match[1]) // 1 = first capture group
   }
+  return acc
 }
 
 if (note.model_name==='LRZTP Colloquial') {
-  let soundField = note.fields['Sound']
-  let matches = [...soundField.matchAll(SOUND_REGEX)]
-  for (const match of matches) {
-    sounds.value.push(match[1]) // 1 = first capture group
-  }
+  getSoundFieldMatches('Sound', sounds.value)
+  getSoundFieldMatches('Sound Example Sentence', soundsSentence.value)
+
 }
 else if (note.model_name==='Tibetan Vocab (Andrew)') {
-  let soundField = note.fields['Sound']
-  const matches = [...soundField.matchAll(SOUND_REGEX)]
-  for (const match of matches) {
-    sounds.value.push(match[1]) // 1 = first capture group
-  }
+  getSoundFieldMatches('Sound', sounds.value)
+  getSoundFieldMatches('Example Sentence Sound', soundsSentence.value)
 }
 
 console.log("sounds=", toRaw(sounds.value))
@@ -77,8 +77,6 @@ else if (note.model_name==='Tibetan Vocab (Andrew)') {
   ) hasMore = true
 }
 
-if (sounds.value.length > 0) hasMore = true
-
 function getBackText() {
   let result = styleTibetan(note.fields['Back'])
   if (isNotEmptyOrNullString(note.fields['Part of Speech'])) result = `(${note.fields['Part of Speech']}) ` + result
@@ -86,7 +84,7 @@ function getBackText() {
 }
 
 function handlePlaySounds(sound) {
-  let URI = "./rigtshul/media/" + encodeURIComponent(sound)
+  let URI = "./"+ basePath +"media/" + encodeURIComponent(sound)
   console.log("Playing: " + URI)
   let audio = new Audio(URI);
   audio.play();
@@ -100,16 +98,20 @@ function handlePlaySounds(sound) {
 <template>
   <v-col cols="12">
     <v-row align="center" justify="start">
-      <v-col :cols="isRandomNotes ? '4' : 'auto'">
+      <v-col cols="6" md="3">
         <div class="search-results-front" v-html="styleTibetan(note.fields.Front)"></div>
       </v-col>
-      <v-col>
+      <v-col cols="6" md="auto">
         <div class="search-results-back" v-html="getBackText()"></div>
       </v-col>
-      <v-col v-if="showDetail" cols="auto">
+      <v-col col="6" md="" >
+        <v-btn style="opacity: 0.5;" compact icon="mdi-play" size="x-small" variant="outlined" v-for="(sound, i) in sounds" :key="note.nid + '-sound-' + i" @click="handlePlaySounds(sound)"></v-btn>
+        <v-btn  style="opacity: 0.5;" compact icon="mdi-play" size="x-small" variant="outlined" color="warning" v-for="(sound, i) in soundsSentence" :key="note.nid + '-sound-' + i" @click="handlePlaySounds(sound)"></v-btn>
+      </v-col>
+      <v-col v-if="showDetail" cols="3" md="2" style="text-align: right">
         <v-btn density="compact" size="x-small" variant="plain" @click="showDetail=false">Less</v-btn>
       </v-col>
-      <v-col v-else-if="hasMore" cols="auto">
+      <v-col v-else-if="hasMore" cols="3" md="2" style="text-align: right">
         <v-btn density="compact" size="x-small" variant="plain" @click="showDetail=true">More</v-btn>
       </v-col>
     </v-row>
@@ -117,7 +119,6 @@ function handlePlaySounds(sound) {
       <v-col>
         <div v-if="note.fields['Note']" v-html="styleTibetan(note.fields['Note'])"></div>
         <div v-if="note.tags">{{'Tags: '+ note.tags}}</div>
-        <v-btn v-for="(sound, i) in sounds" :key="note.nid + '-sound-' + i" @click="handlePlaySounds(sound)">Play</v-btn>
       </v-col>
     </v-row>
     <v-row v-else-if="showDetail && note.model_name==='Tibetan Vocab (Andrew)'" class="tibetan-vocab-andrew detail">
@@ -140,5 +141,9 @@ function handlePlaySounds(sound) {
 }
 .detail div {
   margin-bottom: 10px;
+}
+.v-btn {
+  margin-top: 10px;
+  margin-right: 10px;
 }
 </style>

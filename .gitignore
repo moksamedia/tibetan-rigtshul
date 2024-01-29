@@ -29,3 +29,7 @@ coverage
 
 public/media
 public/media/**
+*.zip
+public/pdf/**
+public/pdf
+*.pdf

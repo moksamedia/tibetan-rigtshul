@@ -1,5 +1,4 @@
 <script>
-import notes from './assets/notes.csv'
 import grammarCards from './assets/grammar-cards.csv'
 import notesJson from './assets/notes.json'
 
@@ -179,7 +178,6 @@ const permutations2 = [
   {tense:'present', questionStatement:'statement', posNeg:'negative', person: '1st', aspect: ''},
 
 ]
-
 </script>
 <script setup>
 import {ref, onMounted, unref, toRaw} from 'vue'
@@ -321,8 +319,15 @@ function styleTibetanSmaller(text) {
 
 let showSearchResultsDetail = ref(new Set())
 
+const currentUrl = window.location.href;
+console.log(currentUrl);
+const basePath = ''
+if (currentUrl.includes('localhost')) {
+  let basePath = "rigtshul/"
+}
+
 function showLessonPdf(card) {
-  let URI = "./rigtshul/" + encodeURIComponent('LRZTP 9 ' + card.Lesson + ".pdf")
+  let URI = "./"+basePath+"pdf/" + encodeURIComponent('LRZTP 9 ' + card.Lesson + ".pdf")
   console.log("Opening: " + URI)
   window.open(URI, '_blank')
 }
@@ -339,12 +344,12 @@ onMounted(() => {
   <main>
     <v-container>
       <v-row>
-        <v-col sm="6" xs="6" md="">
+        <v-col cols="6" md="">
           <v-btn @click="randomize">
             Randomize Again!
           </v-btn>
         </v-col>
-        <v-col md="2" sm="6" xs="6">
+        <v-col md="2" cols="6">
           <v-select
               v-model="numRandomWords"
               label="Num random"
@@ -352,7 +357,7 @@ onMounted(() => {
               variant="underlined"
           ></v-select>
         </v-col>
-        <v-col xs="6" sm="6" md="">
+        <v-col cols="6" md="">
           <v-select
               multiple
               clearable
@@ -362,7 +367,7 @@ onMounted(() => {
               variant="underlined"
           ></v-select>
         </v-col>
-        <v-col xs="6" sm="6" md="">
+        <v-col cols="6" md="">
           <v-select
               multiple
               clearable
@@ -376,11 +381,11 @@ onMounted(() => {
       <v-row>
         <v-col>
           <h1>Word search</h1>
-          <v-text-field label="Seach" variant="outlined" v-model="searchTerm" @input="onSearchTermChange"></v-text-field>
+          <v-text-field label="Seach" variant="outlined" v-model="searchTerm" @change="onSearchTermChange"></v-text-field>
         </v-col>
       </v-row>
       <div v-for="(note, i) in searchResults" :key="'note'+i" class="search-results himalaya">
-        <SearchResult :note="note" :styleTibetan="styleTibetan" idx="i"/>
+        <SearchResult :note="note" :styleTibetan="styleTibetan" idx="i" :basePath="basePath"/>
       </div>
       <v-row class="vertical-spacer"></v-row>
       <v-row class="header-row">
@@ -417,7 +422,7 @@ onMounted(() => {
         </v-col>
       </v-row>
       <div v-for="(note, i) in randomNotes" :key="note.nid" class="search-results">
-        <SearchResult :note="note" :styleTibetan="styleTibetan" idx="i" isRandomNotes="true" :id="'note-'+note.nid"/>
+        <SearchResult :note="note" :styleTibetan="styleTibetan" idx="i" isRandomNotes="true" :id="'note-'+note.nid" :basePath="basePath"/>
       </div>
       <v-row class="vertical-spacer"></v-row>
       <v-row class="header-row">
@@ -442,8 +447,8 @@ onMounted(() => {
             <v-col cols="9">
               <div class="grammar-card-hint" v-html="styleTibetanSmaller(`${card.Hint}`)"></div>
             </v-col>
-            <v-col cols="3" style="text-align: right; font-size: 80%; color: lightgray;">
-              <div class="grammar-card-hint" v-html="styleTibetanSmaller(`${card.Lesson}`)" @click="showLessonPdf(card)"></div>
+            <v-col cols="3" style="text-align: right; font-size: 80%; color: lightgray;" v-if="card.Lesson">
+              <v-btn variant="outlined" size="small" class="grammar-card-hint" v-html="styleTibetanSmaller(`${card.Lesson}`)" @click="showLessonPdf(card)"></v-btn>
             </v-col>
           </v-row>
         </v-col>
